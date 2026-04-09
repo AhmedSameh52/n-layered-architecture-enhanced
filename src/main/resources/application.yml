@@ -13,9 +13,7 @@ spring:
     sql-dialect: POSTGRES
 
   jackson:
-    default-property-inclusion: non_null
-    serialization:
-      write-dates-as-timestamps: false
+    default-property-inclusion: NON_NULL
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}

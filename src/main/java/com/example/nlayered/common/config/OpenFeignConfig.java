@@ -1,34 +1,32 @@
 package com.example.nlayered.common.config;
 
-import feign.Logger;
-import feign.Request;
-import feign.codec.ErrorDecoder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
-import java.util.concurrent.TimeUnit;
-
+/**
+ * HTTP client configuration.
+ * Provides named RestClient beans for each downstream service.
+ * Swap in real HTTP clients (e.g., actual Feign once Spring Cloud
+ * supports Spring Boot 4.x) without touching service code.
+ */
 @Configuration
 public class OpenFeignConfig {
 
-    @Bean
-    public Logger.Level feignLoggerLevel() {
-        return Logger.Level.BASIC;
+    @Bean("notificationRestClient")
+    public RestClient notificationRestClient(
+            @Value("${services.notification.url}") String baseUrl) {
+        return RestClient.builder()
+                .baseUrl(baseUrl)
+                .build();
     }
 
-    @Bean
-    public Request.Options feignRequestOptions() {
-        return new Request.Options(5, TimeUnit.SECONDS, 10, TimeUnit.SECONDS, true);
-    }
-
-    @Bean
-    public ErrorDecoder feignErrorDecoder() {
-        return (methodKey, response) -> {
-            String msg = "Feign call failed for [%s] — HTTP %d".formatted(methodKey, response.status());
-            if (response.status() == 404) {
-                return new IllegalArgumentException(msg);
-            }
-            return new RuntimeException(msg);
-        };
+    @Bean("inventoryRestClient")
+    public RestClient inventoryRestClient(
+            @Value("${services.inventory.url}") String baseUrl) {
+        return RestClient.builder()
+                .baseUrl(baseUrl)
+                .build();
     }
 }
