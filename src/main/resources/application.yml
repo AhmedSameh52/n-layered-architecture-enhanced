@@ -1,0 +1,65 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/nlayered_db
+    username: ${DB_USERNAME:nlayered_user}
+    password: ${DB_PASSWORD:secret}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  jooq:
+    sql-dialect: POSTGRES
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: nlayered-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.example.nlayered.events.model"
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+kafka:
+  topics:
+    order-events: order-events
+    customer-events: customer-events
+
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 5000
+        logger-level: BASIC
+
+services:
+  notification:
+    url: ${NOTIFICATION_SERVICE_URL:http://localhost:8081}
+  inventory:
+    url: ${INVENTORY_SERVICE_URL:http://localhost:8082}
+
+logging:
+  level:
+    com.example.nlayered: DEBUG
+    org.jooq.SQL: DEBUG
+    org.jooq.tools.StopWatch: WARN
